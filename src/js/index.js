@@ -3,7 +3,7 @@ import frag from './shaders/basic.frag';
 import vert from './shaders/basic.vert';
 import {mat4} from 'gl-matrix';
 
-let gl, program, cube;
+let gl, program, cube, rot = 0, angle;
 
 let mvMatrix = mat4.create();
 let pMatrix = mat4.create();
@@ -11,19 +11,21 @@ let pMatrix = mat4.create();
 
 function draw() 
 {
+    rot += .02;
+
     gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     mat4.perspective(pMatrix, 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0);
     mat4.identity(mvMatrix);
-    mat4.translate(mvMatrix, mvMatrix, [-1.5, 0.0, -7.0]);
+    mat4.translate(mvMatrix, mvMatrix, [-0, 0.0, -7.0]);
+    mat4.rotate(mvMatrix, mvMatrix, rot, [0, 1, 1]);
 
     program.uniforms.modelViewMatrix = mvMatrix;
     program.uniforms.projectionMatrix = pMatrix;
     
     POLY.GL.draw(cube);
 }
-
 
 
 let init = ()=>{
@@ -111,7 +113,8 @@ let init = ()=>{
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);
-    draw();
+
+    POLY.utils.loop.add(draw);
 }
 
 init();

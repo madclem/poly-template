@@ -3,10 +3,10 @@ import frag from './shaders/basic.frag';
 import vert from './shaders/basic.vert';
 import {mat4} from 'gl-matrix';
 
-let gl, program, triangle;
+let gl, program, cube;
 
-var mvMatrix = mat4.create();
-var pMatrix = mat4.create();
+let mvMatrix = mat4.create();
+let pMatrix = mat4.create();
 
 
 function draw() 
@@ -21,13 +21,13 @@ function draw()
     program.uniforms.modelViewMatrix = mvMatrix;
     program.uniforms.projectionMatrix = pMatrix;
     
-    POLY.GL.draw(triangle);
+    POLY.GL.draw(cube);
 }
 
 
 
 let init = ()=>{
-    var canvas = document.getElementById("canvas");
+    let canvas = document.getElementById("canvas");
     POLY.init(canvas);
     gl = POLY.gl;
 
@@ -38,12 +38,76 @@ let init = ()=>{
     }
 
     program = new POLY.Program(vert, frag, uniforms);
-    triangle = new POLY.Mesh(program);
-    triangle.addPosition([
-        0.0,  1.0,  0.0,
-        -1.0, -1.0,  0.0,
-        1.0, -1.0,  0.0
-    ]);
+    cube = new POLY.Mesh(program);
+
+    const vertices = [
+        // Front face
+        -1.0, -1.0,  1.0,
+         1.0, -1.0,  1.0,
+         1.0,  1.0,  1.0,
+        -1.0,  1.0,  1.0,
+
+        // Back face
+        -1.0, -1.0, -1.0,
+        -1.0,  1.0, -1.0,
+         1.0,  1.0, -1.0,
+         1.0, -1.0, -1.0,
+
+        // Top face
+        -1.0,  1.0, -1.0,
+        -1.0,  1.0,  1.0,
+         1.0,  1.0,  1.0,
+         1.0,  1.0, -1.0,
+
+        // Bottom face
+        -1.0, -1.0, -1.0,
+         1.0, -1.0, -1.0,
+         1.0, -1.0,  1.0,
+        -1.0, -1.0,  1.0,
+
+        // Right face
+         1.0, -1.0, -1.0,
+         1.0,  1.0, -1.0,
+         1.0,  1.0,  1.0,
+         1.0, -1.0,  1.0,
+
+        // Left face
+        -1.0, -1.0, -1.0,
+        -1.0, -1.0,  1.0,
+        -1.0,  1.0,  1.0,
+        -1.0,  1.0, -1.0
+    ];
+
+    let colors = [
+        [1.0, 0.0, 0.0, 1.0], // Front face
+        [1.0, 1.0, 0.0, 1.0], // Back face
+        [0.0, 1.0, 0.0, 1.0], // Top face
+        [1.0, 0.5, 0.5, 1.0], // Bottom face
+        [1.0, 0.0, 1.0, 1.0], // Right face
+        [0.0, 0.0, 1.0, 1.0]  // Left face
+    ];
+    let unpackedColors = [];
+    for (let i in colors) {
+        let color = colors[i];
+        for (let j=0; j < 4; j++) {
+            unpackedColors = unpackedColors.concat(color);
+        }
+    }
+
+
+    var cubeVertexIndices = [
+        0, 1, 2,      0, 2, 3,    // Front face
+        4, 5, 6,      4, 6, 7,    // Back face
+        8, 9, 10,     8, 10, 11,  // Top face
+        12, 13, 14,   12, 14, 15, // Bottom face
+        16, 17, 18,   16, 18, 19, // Right face
+        20, 21, 22,   20, 22, 23  // Left face
+    ];
+
+
+    cube.addPosition(vertices);
+    cube.addAttribute(unpackedColors, 'aColor', 4);
+    cube.addIndices(cubeVertexIndices, false);
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.enable(gl.DEPTH_TEST);

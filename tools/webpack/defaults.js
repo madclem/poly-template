@@ -47,7 +47,10 @@ const dfltPort = 8000;
        exclude: /node_modules/,
        query: {
          cacheDirectory: true,
-         presets: ['es2015']
+         presets: [['es2015', {loose: true}]],
+         plugins: [
+          'add-module-exports'
+         ]
        }
       }
      ]

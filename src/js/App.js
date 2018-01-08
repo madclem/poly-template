@@ -11,6 +11,7 @@ export default class App
 	constructor()
 	{
 		let canvas = document.getElementById("canvas");
+
     	POLY.init(canvas);
 	    this.gl = POLY.gl;
 
@@ -28,6 +29,11 @@ export default class App
 		this.scene = new MainScene();
 	    
 	    POLY.utils.loop.add(this._update.bind(this));
+	}
+
+	resize()
+	{
+		POLY.GL.resize(this.gl.canvas.clientWidth, this.gl.canvas.clientHeight)
 	}
 
 	_update()

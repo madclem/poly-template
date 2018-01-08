@@ -18,13 +18,26 @@ export default class MainScene
 		this.projectionMatrix = mat4.create();
 	    this.gl = POLY.gl;
 
+	    let texture = new POLY.Texture(window.ASSET_URL + 'image/nehe.gif');
+	    texture.bind();
 	    let uniforms = {
-	        projectionMatrix: this.projectionMatrix,
-	        modelViewMatrix: this.modelViewMatrix 
+	        projectionMatrix: {
+	        	value: this.projectionMatrix,
+	        	type: 'mat4'
+	        },
+	        modelViewMatrix: {
+	        	value: this.modelViewMatrix,
+	        	type: 'mat4'
+	        },
+	        uTexture: {
+	        	value: texture,
+	        	type: 'texture'
+	        }  
 	    }
 
 	    this.program = new POLY.Program(vert, frag, uniforms);
 	    this.cube = new POLY.Mesh(this.program);
+
 
 	    const vertices = [
 	        // Front face
@@ -64,23 +77,44 @@ export default class MainScene
 	        -1.0,  1.0, -1.0
 	    ];
 
-	    let colors = [
-	        [1.0, 0.0, 0.0, 1.0], // Front face
-	        [1.0, 1.0, 0.0, 1.0], // Back face
-	        [0.0, 1.0, 0.0, 1.0], // Top face
-	        [1.0, 0.5, 0.5, 1.0], // Bottom face
-	        [1.0, 0.0, 1.0, 1.0], // Right face
-	        [0.0, 0.0, 1.0, 1.0]  // Left face
+	     var textureCoords = [
+	      // Front face
+	      0.0, 0.0,
+	      1.0, 0.0,
+	      1.0, 1.0,
+	      0.0, 1.0,
+
+	      // Back face
+	      1.0, 0.0,
+	      1.0, 1.0,
+	      0.0, 1.0,
+	      0.0, 0.0,
+
+	      // Top face
+	      0.0, 1.0,
+	      0.0, 0.0,
+	      1.0, 0.0,
+	      1.0, 1.0,
+
+	      // Bottom face
+	      1.0, 1.0,
+	      0.0, 1.0,
+	      0.0, 0.0,
+	      1.0, 0.0,
+
+	      // Right face
+	      1.0, 0.0,
+	      1.0, 1.0,
+	      0.0, 1.0,
+	      0.0, 0.0,
+
+	      // Left face
+	      0.0, 0.0,
+	      1.0, 0.0,
+	      1.0, 1.0,
+	      0.0, 1.0,
 	    ];
-	    let unpackedColors = [];
-	    for (let i in colors) {
-	        let color = colors[i];
-	        for (let j=0; j < 4; j++) {
-	            unpackedColors = unpackedColors.concat(color);
-	        }
-	    }
-
-
+	    
 	    var cubeVertexIndices = [
 	        0, 1, 2,      0, 2, 3,    // Front face
 	        4, 5, 6,      4, 6, 7,    // Back face
@@ -92,7 +126,7 @@ export default class MainScene
 
 
 	    this.cube.addPosition(vertices);
-	    this.cube.addAttribute(unpackedColors, 'aColor', 4);
+	    this.cube.addAttribute(textureCoords, 'aUv', 2);
 	    this.cube.addIndices(cubeVertexIndices, false);
 
 	    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -108,6 +142,7 @@ export default class MainScene
 	    mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [-0, 0.0, -7.0]);
 	    mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, this.rot, [0, 1, 1]);
 
+	    this.program.uniforms.uTexture.bind();
 	    this.program.uniforms.modelViewMatrix = this.modelViewMatrix;
 	    this.program.uniforms.projectionMatrix = this.projectionMatrix;
 	    

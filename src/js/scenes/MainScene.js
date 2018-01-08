@@ -7,13 +7,14 @@ export default class MainScene
 {
 	constructor()
 	{
-
 		this.gl = null;
 		this.program = null;
 		this.cube = null;
 		this.rot = null;
 		this.angle = null;
 		
+		this.camera = new POLY.cameras.DefaultCamera();
+		this.orbitalControl = new POLY.control.OrbitalControl(this.camera.viewMatrix);
 		this.modelViewMatrix = mat4.create();
 		this.projectionMatrix = mat4.create();
 	    this.gl = POLY.gl;
@@ -137,14 +138,20 @@ export default class MainScene
 	{
 		this.rot += .02;
 
-	    mat4.perspective(this.projectionMatrix, 45, this.gl.viewportWidth / this.gl.viewportHeight, 0.1, 100.0);
+		this.orbitalControl.update();
+
+
+		this.camera.perspective(45, POLY.GL.aspectRatio, 0.1, 100.0)
+		// this.camera.lookAt([0,0,0], [0,1,0]);
+
+	    mat4.perspective(this.projectionMatrix, 45, POLY.GL.aspectRatio, 0.1, 100.0);
 	    mat4.identity(this.modelViewMatrix);
-	    mat4.translate(this.modelViewMatrix, this.modelViewMatrix, [-0, 0.0, -7.0]);
+
 	    mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, this.rot, [0, 1, 1]);
 
 	    this.program.uniforms.uTexture.bind();
-	    this.program.uniforms.modelViewMatrix = this.modelViewMatrix;
-	    this.program.uniforms.projectionMatrix = this.projectionMatrix;
+	    this.program.uniforms.modelViewMatrix = this.camera.viewMatrix;
+	    this.program.uniforms.projectionMatrix = this.camera.projection;
 	    
 	    POLY.GL.draw(this.cube);
 	}

@@ -22,6 +22,7 @@ module.exports = {
   resolve: {
     alias: {
         'poly'      : path.join(__dirname, '../../node_modules/poly.js/src'),
+        'utils'      : path.join(__dirname, '../../src/js/utils'),
     }
   }
 }

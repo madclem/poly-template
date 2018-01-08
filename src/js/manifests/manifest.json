@@ -1,0 +1,7 @@
+{
+    "default": [
+        "image/./loader_fill.png",
+        "image/./switch_off.png",
+        "image/test/frame.jpg"
+    ]
+}

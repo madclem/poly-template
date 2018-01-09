@@ -16,6 +16,7 @@ export default class MainScene
 		this.modelMatrix = mat4.create();
 
 		this.camera = new POLY.cameras.PerspectiveCamera();
+		this.camera.perspective(45, POLY.GL.aspectRatio, 0.1, 100.0)
 		this.orbitalControl = new POLY.control.OrbitalControl(this.camera.matrix);
 
 	    this.gl = POLY.gl;
@@ -145,7 +146,6 @@ export default class MainScene
 
 		this.orbitalControl.update();
 		this.camera.position[2] += .01;
-		this.camera.perspective(45, POLY.GL.aspectRatio, 0.1, 100.0)
 
 	    this.program.uniforms.uTexture.bind();
 	    this.program.uniforms.modelMatrix = this.modelMatrix;
@@ -153,5 +153,10 @@ export default class MainScene
 	    this.program.uniforms.viewMatrix = this.camera.matrix;
 
 	    POLY.GL.draw(this.cube);
+	}
+
+	resize()
+	{
+		this.camera.setAspectRatio(POLY.GL.aspectRatio);
 	}
 }

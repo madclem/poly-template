@@ -12,28 +12,33 @@ export default class MainScene
 		this.cube = null;
 		this.rot = null;
 		this.angle = null;
-		
-		this.camera = new POLY.cameras.DefaultCamera();
-		this.orbitalControl = new POLY.control.OrbitalControl(this.camera.viewMatrix);
-		this.modelViewMatrix = mat4.create();
-		this.projectionMatrix = mat4.create();
+
+		this.modelMatrix = mat4.create();
+
+		this.camera = new POLY.cameras.PerspectiveCamera();
+		this.orbitalControl = new POLY.control.OrbitalControl(this.camera.matrix);
+
 	    this.gl = POLY.gl;
 
 	    let texture = new POLY.Texture(window.ASSET_URL + 'image/nehe.gif');
 	    texture.bind();
 	    let uniforms = {
 	        projectionMatrix: {
-	        	value: this.projectionMatrix,
+	        	value: this.camera.projectionMatrix,
 	        	type: 'mat4'
 	        },
-	        modelViewMatrix: {
-	        	value: this.modelViewMatrix,
+	        modelMatrix: {
+	        	value: this.modelMatrix,
+	        	type: 'mat4'
+	        },
+	        viewMatrix: {
+	        	value: this.camera.matrix,
 	        	type: 'mat4'
 	        },
 	        uTexture: {
 	        	value: texture,
 	        	type: 'texture'
-	        }  
+	        }
 	    }
 
 	    this.program = new POLY.Program(vert, frag, uniforms);
@@ -115,7 +120,7 @@ export default class MainScene
 	      1.0, 1.0,
 	      0.0, 1.0,
 	    ];
-	    
+
 	    var cubeVertexIndices = [
 	        0, 1, 2,      0, 2, 3,    // Front face
 	        4, 5, 6,      4, 6, 7,    // Back face
@@ -139,20 +144,14 @@ export default class MainScene
 		this.rot += .02;
 
 		this.orbitalControl.update();
-
-
+		this.camera.position[2] += .01;
 		this.camera.perspective(45, POLY.GL.aspectRatio, 0.1, 100.0)
-		// this.camera.lookAt([0,0,0], [0,1,0]);
-
-	    mat4.perspective(this.projectionMatrix, 45, POLY.GL.aspectRatio, 0.1, 100.0);
-	    mat4.identity(this.modelViewMatrix);
-
-	    mat4.rotate(this.modelViewMatrix, this.modelViewMatrix, this.rot, [0, 1, 1]);
 
 	    this.program.uniforms.uTexture.bind();
-	    this.program.uniforms.modelViewMatrix = this.camera.viewMatrix;
-	    this.program.uniforms.projectionMatrix = this.camera.projection;
-	    
+	    this.program.uniforms.modelMatrix = this.modelMatrix;
+	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
+	    this.program.uniforms.viewMatrix = this.camera.matrix;
+
 	    POLY.GL.draw(this.cube);
 	}
 }

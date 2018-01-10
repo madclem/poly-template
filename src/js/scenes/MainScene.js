@@ -21,8 +21,11 @@ export default class MainScene
 
 	    this.gl = POLY.gl;
 
-	    let texture = new POLY.Texture(window.ASSET_URL + 'image/nehe.gif');
+	    let texture = new POLY.Texture(window.ASSET_URL + 'image/crate.gif');
 	    texture.bind();
+
+
+
 	    let uniforms = {
 	        projectionMatrix: {
 	        	value: this.camera.projectionMatrix,
@@ -36,10 +39,22 @@ export default class MainScene
 	        	value: this.camera.matrix,
 	        	type: 'mat4'
 	        },
-	        uTexture: {
-	        	value: texture,
-	        	type: 'texture'
-	        }
+	        // uTexture: {
+	        // 	value: texture,
+	        // 	type: 'texture'
+	        // },
+	        uAmbientColor: {
+	        	value: [.2, .2, .2],
+	        	type: 'vec3'
+	        },
+	        // uLightingDirection: {
+	        // 	value: [-.25, -.25, -1.],
+	        // 	type: 'vec3'
+	        // },
+	        // uDirectionalColor: {
+	        // 	value: [.8, .8,.8],
+	        // 	type: 'vec3'
+	        // }
 	    }
 
 	    this.program = new POLY.Program(vert, frag, uniforms);
@@ -122,6 +137,44 @@ export default class MainScene
 	      0.0, 1.0,
 	    ];
 
+	    var vertexNormals = [
+			// Front face
+			0.0,  0.0,  1.0,
+			0.0,  0.0,  1.0,
+			0.0,  0.0,  1.0,
+			0.0,  0.0,  1.0,
+
+			// Back face
+			0.0,  0.0, -1.0,
+			0.0,  0.0, -1.0,
+			0.0,  0.0, -1.0,
+			0.0,  0.0, -1.0,
+
+			// Top face
+			0.0,  1.0,  0.0,
+			0.0,  1.0,  0.0,
+			0.0,  1.0,  0.0,
+			0.0,  1.0,  0.0,
+
+			// Bottom face
+			0.0, -1.0,  0.0,
+			0.0, -1.0,  0.0,
+			0.0, -1.0,  0.0,
+			0.0, -1.0,  0.0,
+
+			// Right face
+			1.0,  0.0,  0.0,
+			1.0,  0.0,  0.0,
+			1.0,  0.0,  0.0,
+			1.0,  0.0,  0.0,
+
+			// Left face
+			-1.0,  0.0,  0.0,
+			-1.0,  0.0,  0.0,
+			-1.0,  0.0,  0.0,
+			-1.0,  0.0,  0.0,
+		];
+
 	    var cubeVertexIndices = [
 	        0, 1, 2,      0, 2, 3,    // Front face
 	        4, 5, 6,      4, 6, 7,    // Back face
@@ -134,6 +187,7 @@ export default class MainScene
 
 	    this.cube.addPosition(vertices);
 	    this.cube.addAttribute(textureCoords, 'aUv', 2);
+	    this.cube.addAttribute(vertexNormals, 'aNormal', 3);
 	    this.cube.addIndices(cubeVertexIndices, false);
 
 	    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
@@ -142,6 +196,7 @@ export default class MainScene
 
 	render()
 	{
+		return;
 		this.rot += .02;
 
 		this.orbitalControl.update();
@@ -152,6 +207,18 @@ export default class MainScene
 	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.program.uniforms.viewMatrix = this.camera.matrix;
 
+
+
+	        this.program.uniforms.uAmbientColor = [.2, .2, .2];
+	        	
+	        // this.program.uniforms.uLightingDirection: {
+	        // 	value: [-.25, -.25, -1.],
+	        // 	type: 'vec3'
+	        // },
+	        // this.program.uniforms.uDirectionalColor: {
+	        // 	value: [.8, .8,.8],
+	        // 	type: 'vec3'
+	        // }
 	    POLY.GL.draw(this.cube);
 	}
 

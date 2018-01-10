@@ -74,6 +74,7 @@
     "glslify-loader": "^1.0.2",
     "gulp-jsonminify": "^1.0.0",
     "gulp-rename": "^1.2.2",
+    "node-dir": "^0.1.17",
     "path": "^0.12.7",
     "pixi-spine": "git+https://github.com/pixijs/pixi-spine.git#v1.2.3",
     "pixi.js": "git+https://github.com/pixijs/pixi.js.git#dev",

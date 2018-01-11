@@ -24,7 +24,7 @@ export default class MainScene
 
 	    this.gl = POLY.gl;
 
-	    let texture = new POLY.Texture(window.ASSET_URL + 'image/crate.gif');
+	    let texture = new POLY.Texture(window.ASSET_URL + 'image/glass.gif');
 	    texture.bind();
 
 
@@ -58,14 +58,21 @@ export default class MainScene
 	        	value: [.25, .25, 1.],
 	        	type: 'vec3'
 	        },
+	        uAlpha: {
+	        	value: .8,
+	        	type: 'float'
+	        },
 	        uDirectionalColor: {
 	        	value: [.8, .8,.8],
 	        	type: 'vec3'
 	        }
 	    }
 
+		let state = new POLY.State(this.gl);
+		state.blend = true;
+		state.blendMode = true;
 	    this.program = new POLY.Program(vert, frag, uniforms);
-	    this.cube = new POLY.Mesh(this.program);
+	    this.cube = new POLY.Mesh(this.program, state);
 
 
 	    const vertices = [
@@ -198,7 +205,7 @@ export default class MainScene
 	    this.cube.addIndices(cubeVertexIndices, false);
 
 	    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	    this.gl.enable(this.gl.DEPTH_TEST);
+	    // this.gl.enable(this.gl.DEPTH_TEST);
 	}
 
 	render()

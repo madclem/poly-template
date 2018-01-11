@@ -1,6 +1,7 @@
 {
     "default": [
         "image/./crate.gif",
+        "image/./glass.gif",
         "image/./nehe.gif"
     ]
 }

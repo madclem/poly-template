@@ -7,5 +7,7 @@ canvas
 {
     width: 100vw;
     height: 100vh;
-    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
 }

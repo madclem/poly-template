@@ -74,6 +74,9 @@ export default class MainScene
 	    this.program = new POLY.Program(vert, frag, uniforms);
 	    this.cube = new POLY.Mesh(this.program, state);
 
+		this.cube.position.x = 2;
+		this.cube.position.y = 3;
+		this.cube.position.z = 4;
 
 	    const vertices = [
 	        // Front face

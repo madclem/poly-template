@@ -11,6 +11,7 @@ export default class MainScene
 		this.program = null;
 		this.cube = null;
 		this.rot = null;
+		this.tick = 0;
 		this.angle = null;
 
 		this.modelMatrix = mat4.create();
@@ -74,9 +75,7 @@ export default class MainScene
 	    this.program = new POLY.Program(vert, frag, uniforms);
 	    this.cube = new POLY.Mesh(this.program, state);
 
-		this.cube.position.x = 2;
-		this.cube.position.y = 3;
-		this.cube.position.z = 4;
+		// this.cube.position.x = .5;
 
 	    const vertices = [
 	        // Front face
@@ -208,25 +207,26 @@ export default class MainScene
 	    this.cube.addIndices(cubeVertexIndices, false);
 
 	    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	    // this.gl.enable(this.gl.DEPTH_TEST);
 	}
 
 	render()
 	{
-		this.rot += .02;
+		this.tick++;
 
 		this.orbitalControl.update();
 		this.camera.position[2] += .01;
+		// this.cube.rotation.y += .1;
+		this.cube.setScale(1 + Math.cos(this.tick/20) * .5, 1 + Math.sin(this.tick/20) * .5, 1 + Math.cos(this.tick/20) * .5);
 
 		// normal matrix
-		mat4.multiply(this._matrix, this.camera.matrix, this.modelMatrix);
+		mat4.multiply(this._matrix, this.camera.matrix, this.cube._matrix);
     	mat3.fromMat4(this.normalMatrix, this._matrix);
     	mat3.transpose(this.normalMatrix, this.normalMatrix);
 
 	    this.program.uniforms.uTexture.bind();
 
 		// set uniforms
-	    this.program.uniforms.modelMatrix = this.modelMatrix;
+	    this.program.uniforms.modelMatrix = this.cube._matrix;
 	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.program.uniforms.viewMatrix = this.camera.matrix;
 		this.program.uniforms.normalMatrix = this.normalMatrix;

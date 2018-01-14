@@ -25,7 +25,7 @@ export default class MainScene
 
 	    this.gl = POLY.gl;
 
-	    let texture = new POLY.Texture(window.ASSET_URL + 'image/glass.gif');
+	    let texture = new POLY.Texture(window.ASSET_URL + 'image/crate.gif');
 	    texture.bind();
 
 
@@ -70,21 +70,12 @@ export default class MainScene
 	    }
 
 		let state = new POLY.State(this.gl);
-		state.blend = true;
-		state.blendMode = true;
-		
+		// state.blend = true;
+		state.depthTest = true;
+
 	    this.program = new POLY.Program(vert, frag, uniforms);
 
-	    this.cubes = [];
-
-	    for (var i = 0; i < 100; i++) {
-	    	let cube = new POLY.geometry.Cube(this.program, state, {});
-	    	cube.position.x = Math.random() * 4 - 4/2;
-	    	cube.position.y = Math.random() * 4 - 4/2;
-	    	cube.position.z = Math.random() * 4 - 4/2;
-	    	this.cubes.push(cube);
-	    }
-    	// this.cube = new POLY.geometry.Cube(this.program, state, {});
+    	this.cube = new POLY.geometry.Cube(this.program, {}, state);
 	}
 
 	render()
@@ -96,23 +87,18 @@ export default class MainScene
 	    this.program.uniforms.uTexture.bind();
 
 		// set uniforms
+		let c = this.cube;
+
 	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.program.uniforms.viewMatrix = this.camera.matrix;
 		this.program.uniforms.normalMatrix = this.normalMatrix;
 
-		for (var i = 0; i < this.cubes.length; i++) 
-		{
-			let c = this.cubes[i];
-			c.rotation.y += .05;
-			
-			// normal matrix
-			mat4.multiply(this._matrix, this.camera.matrix, c._matrix);
-    		mat3.fromMat4(this.normalMatrix, this._matrix);
-    		mat3.transpose(this.normalMatrix, this.normalMatrix);
-
-			this.program.uniforms.modelMatrix = c._matrix;
-	    	POLY.GL.draw(c);
-		}
+		mat4.multiply(this._matrix, this.camera.matrix, c._matrix);
+		mat3.fromMat4(this.normalMatrix, this._matrix);
+		mat3.transpose(this.normalMatrix, this.normalMatrix);
+	   	
+		this.program.uniforms.modelMatrix = c._matrix;
+	   	POLY.GL.draw(c);
 	}
 
 	resize()

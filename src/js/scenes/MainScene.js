@@ -59,9 +59,17 @@ export default class MainScene
 	        	value: [-2.0, .0, 0.],
 	        	type: 'vec3'
 	        },
-	        uPointLightingColor: {
+	        uPointLightingDiffuseColor: {
 	        	value: [1., 0, 0],
 	        	type: 'vec3'
+	        },
+	        uPointLightingSpecularColor: {
+	        	value: [0., 1., 0],
+	        	type: 'vec3'
+	        },
+	        uMaterialShininess: {
+	        	value: 4.,
+	        	type: 'float'
 	        },
 	        uAlpha: {
 	        	value: 1,
@@ -70,7 +78,6 @@ export default class MainScene
 	    }
 
 		let state = new POLY.State(this.gl);
-		// state.blend = true;
 		state.depthTest = true;
 
 	    this.program = new POLY.Program(vert, frag, uniforms);

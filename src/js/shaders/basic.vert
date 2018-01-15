@@ -19,7 +19,7 @@ void main(void) {
 
 	vec3 transformedNormal = aNormal * normalMatrix;
 	vNormal = transformedNormal;
-	vec4 mvPosition = modelMatrix * viewMatrix * vec4(aPosition, 1.0);
+	vec4 mvPosition =  viewMatrix * modelMatrix * vec4(aPosition, 1.0);
 
     gl_Position = projectionMatrix * mvPosition;
 }

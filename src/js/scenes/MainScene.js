@@ -55,17 +55,17 @@ export default class MainScene
 	        	value: [.2, .2, .2],
 	        	type: 'vec3'
 	        },
-	        uLightingDirection: {
-	        	value: [.25, .25, 1.],
+	        uPointLightingLocation: {
+	        	value: [-2.0, .0, 0.],
+	        	type: 'vec3'
+	        },
+	        uPointLightingColor: {
+	        	value: [1., 0, 0],
 	        	type: 'vec3'
 	        },
 	        uAlpha: {
-	        	value: .8,
+	        	value: 1,
 	        	type: 'float'
-	        },
-	        uDirectionalColor: {
-	        	value: [.8, .8,.8],
-	        	type: 'vec3'
 	        }
 	    }
 
@@ -96,7 +96,7 @@ export default class MainScene
 		mat4.multiply(this._matrix, this.camera.matrix, c._matrix);
 		mat3.fromMat4(this.normalMatrix, this._matrix);
 		mat3.transpose(this.normalMatrix, this.normalMatrix);
-	   	
+
 		this.program.uniforms.modelMatrix = c._matrix;
 	   	POLY.GL.draw(c);
 	}

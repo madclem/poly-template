@@ -29,13 +29,13 @@ void main(void) {
 
 	float specularLightWeighting = 0.;
 
-	if (shininess < 255.0) {
+	// if (shininess < 255.0) {
 		vec3 eyeDirection = normalize(-vPos.xyz);
 		vec3 reflectionDirection = reflect(-lightDirection, normal);
-		float specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), 0.);
+		specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), 0.);
 
         specularLightWeighting = pow(max(dot(reflectionDirection, eyeDirection), 0.0), shininess);
-    }
+    // }
 
 
 	float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
@@ -44,7 +44,7 @@ void main(void) {
         + uPointLightingSpecularColor * specularLightWeighting;
         + uPointLightingDiffuseColor * diffuseLightWeighting;
 
-	gl_FragColor = vec4(textureColor.rgb * lightWeighting, textureColor.a * specularLightWeighting);
+	gl_FragColor = vec4(textureColor.rgb * lightWeighting, textureColor.a);
 	gl_FragColor.rgb *= specularLightWeighting;
 	// gl_FragColor = vec4(textureColor.rgb * lightWeighting, textureColor.a * uAlpha);
 	// gl_FragColor.rgb *= uAlpha;

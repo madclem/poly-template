@@ -25,8 +25,13 @@ export default class MainScene
 
 	    this.gl = POLY.gl;
 
-	    let texture = new POLY.Texture(window.ASSET_URL + 'image/crate.gif');
-	    texture.bind();
+
+
+	    this.texture = new POLY.Texture(window.ASSET_URL + 'image/earth.jpg');
+		// this.texture.bind();
+	    this.textureSpecular = new POLY.Texture(window.ASSET_URL + 'image/earth-specular.gif');
+		// this.texture.bind(1);
+
 
 
 
@@ -48,11 +53,17 @@ export default class MainScene
 	        	type: 'mat4'
 	        },
 	        uTexture: {
-	        	value: texture,
-	        	type: 'texture'
+	        	value: this.texture,
+	        	type: 'texture',
+				index: 0
+	        },
+	        uTextureSpecular: {
+	        	value: this.textureSpecular,
+	        	type: 'texture',
+				index: 1
 	        },
 	        uAmbientColor: {
-	        	value: [.2, .2, .2],
+	        	value: [.3, .3, .3],
 	        	type: 'vec3'
 	        },
 	        uPointLightingLocation: {
@@ -64,7 +75,7 @@ export default class MainScene
 	        	type: 'vec3'
 	        },
 	        uPointLightingSpecularColor: {
-	        	value: [0., 1., 0],
+	        	value: [5., 5., 5.],
 	        	type: 'vec3'
 	        },
 	        uMaterialShininess: {
@@ -82,7 +93,7 @@ export default class MainScene
 
 	    this.program = new POLY.Program(vert, frag, uniforms);
 
-    	this.cube = new POLY.geometry.Cube(this.program, {}, state);
+    	this.cube = new POLY.geometry.Sphere(this.program, {}, state);
 	}
 
 	render()
@@ -91,10 +102,13 @@ export default class MainScene
 
 		this.orbitalControl.update();
 		this.camera.position[2] += .01;
-	    this.program.uniforms.uTexture.bind();
+	    // this.program.uniforms.uTexture.bind();
 
 		// set uniforms
 		let c = this.cube;
+
+		this.texture.bind(0);
+		this.textureSpecular.bind(1);
 
 	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.program.uniforms.viewMatrix = this.camera.matrix;

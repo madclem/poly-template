@@ -9,7 +9,7 @@ export default class MainScene
 	{
 		this.gl = null;
 		this.program = null;
-		this.cube = null;
+		this.sphere = null;
 		this.rot = null;
 		this.tick = 0;
 		this.angle = null;
@@ -26,14 +26,78 @@ export default class MainScene
 	    this.gl = POLY.gl;
 
 
+		// this.fbo = new POLY.FrameBuffer();
+
+
+		let vertQuad = `
+			attribute vec3 aPosition;
+			//attribute vec2 aUv;
+			uniform mat4 modelMatrix;
+			uniform mat4 viewMatrix;
+			uniform mat4 projectionMatrix;
+
+			varying vec3 vPos;
+			//varying vec2 vUv;
+
+
+			void main(void) {
+				vPos = aPosition;
+				//vUv = aUv;
+			    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
+			}
+		`
+
+		let fragQuad = `
+		precision mediump float;
+
+		uniform sampler2D uTexture;
+
+		varying vec3 vPos;
+		varying vec2 vUv;
+
+		void main(void) {
+
+			//vec4 textureColor = texture2D(uTexture, vec2(vUv.s, vUv.t));
+			gl_FragColor = vec4(1.);
+			// gl_FragColor.rgb *= uAlpha;
+		}
+
+		`
+
+
+		this.programQuad = new POLY.Program(vertQuad, fragQuad, {
+			projectionMatrix: {
+	        	value: this.camera.projectionMatrix,
+	        	type: 'mat4'
+	        },
+	        modelMatrix: {
+	        	value: this.modelMatrix,
+	        	type: 'mat4'
+	        },
+	        viewMatrix: {
+	        	value: this.camera.matrix,
+	        	type: 'mat4'
+	        },
+		});
+		this.quad = new POLY.geometry.Mesh(this.programQuad, null, POLY.gl.TRIANGLE_STRIP);
+		this.quad.addPosition(
+			[
+				10.0, -10.0, 0.0,
+				10.0, 10.0, 0.0,
+				-10.0, -10.0, 0.0,
+				-10.0, 10.0, 0.0
+			]
+		)
+		this.quad.addIndices(
+			[3,2,1,3,1,0]
+		);
+
+		this.quad.scale.x = 10.;
+		this.quad.scale.y = 10.;
+		this.quad.scale.z = 10.;
 
 	    this.texture = new POLY.Texture(window.ASSET_URL + 'image/earth.jpg');
-		// this.texture.bind();
 	    this.textureSpecular = new POLY.Texture(window.ASSET_URL + 'image/earth-specular.gif');
-		// this.texture.bind(1);
-
-
-
 
 	    let uniforms = {
 	        projectionMatrix: {
@@ -63,7 +127,7 @@ export default class MainScene
 				index: 1
 	        },
 	        uAmbientColor: {
-	        	value: [.3, .3, .3],
+	        	value: [.5, .5, .5],
 	        	type: 'vec3'
 	        },
 	        uPointLightingLocation: {
@@ -79,7 +143,7 @@ export default class MainScene
 	        	type: 'vec3'
 	        },
 	        uMaterialShininess: {
-	        	value: 4.,
+	        	value: 40.,
 	        	type: 'float'
 	        },
 	        uAlpha: {
@@ -93,7 +157,7 @@ export default class MainScene
 
 	    this.program = new POLY.Program(vert, frag, uniforms);
 
-    	this.cube = new POLY.geometry.Sphere(this.program, {}, state);
+    	this.sphere = new POLY.geometry.Sphere(this.program, {}, state);
 	}
 
 	render()
@@ -105,21 +169,29 @@ export default class MainScene
 	    // this.program.uniforms.uTexture.bind();
 
 		// set uniforms
-		let c = this.cube;
+		let c = this.sphere;
+
+		c.rotation.y += .01;
 
 		this.texture.bind(0);
 		this.textureSpecular.bind(1);
-
-	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
-	    this.program.uniforms.viewMatrix = this.camera.matrix;
-		this.program.uniforms.normalMatrix = this.normalMatrix;
 
 		mat4.multiply(this._matrix, this.camera.matrix, c._matrix);
 		mat3.fromMat4(this.normalMatrix, this._matrix);
 		mat3.transpose(this.normalMatrix, this.normalMatrix);
 
+	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
+	    this.program.uniforms.viewMatrix = this.camera.matrix;
+		this.program.uniforms.normalMatrix = this.normalMatrix;
+
+
 		this.program.uniforms.modelMatrix = c._matrix;
 	   	POLY.GL.draw(c);
+
+		this.programQuad.uniforms.projectionMatrix = this.camera.projectionMatrix;
+	    this.programQuad.uniforms.viewMatrix = this.camera.matrix;
+		// this.programQuad.uniforms.modelMatrix = c._matrix;
+		POLY.GL.draw(this.quad);
 	}
 
 	resize()

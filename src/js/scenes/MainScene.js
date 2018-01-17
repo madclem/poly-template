@@ -25,24 +25,30 @@ export default class MainScene
 
 	    this.gl = POLY.gl;
 
+		let state = new POLY.State(this.gl);
+		state.depthTest = true;
 
-		// this.fbo = new POLY.FrameBuffer();
+		this.fbo = new POLY.FrameBuffer();
 
 
 		let vertQuad = `
+			precision mediump float;
+
 			attribute vec3 aPosition;
-			//attribute vec2 aUv;
+			attribute vec3 aNormal;
+			attribute vec2 aUv;
 			uniform mat4 modelMatrix;
 			uniform mat4 viewMatrix;
 			uniform mat4 projectionMatrix;
 
 			varying vec3 vPos;
-			//varying vec2 vUv;
+			varying vec2 vUv;
 
 
 			void main(void) {
 				vPos = aPosition;
-				//vUv = aUv;
+				vec3 n = aNormal;
+				vUv = aUv;
 			    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
 			}
 		`
@@ -57,14 +63,16 @@ export default class MainScene
 
 		void main(void) {
 
-			//vec4 textureColor = texture2D(uTexture, vec2(vUv.s, vUv.t));
-			gl_FragColor = vec4(1.);
+			vec4 textureColor = texture2D(uTexture, vec2(vUv.s, vUv.t));
+			gl_FragColor = textureColor;
+			// gl_FragColor = vec4(1.);
 			// gl_FragColor.rgb *= uAlpha;
 		}
 
 		`
 
 
+		this.textureCrate = new POLY.Texture(window.ASSET_URL + 'image/crate.gif');
 		this.programQuad = new POLY.Program(vertQuad, fragQuad, {
 			projectionMatrix: {
 	        	value: this.camera.projectionMatrix,
@@ -78,23 +86,32 @@ export default class MainScene
 	        	value: this.camera.matrix,
 	        	type: 'mat4'
 	        },
+			uTexture: {
+				type:'texture',
+				value: this.textureCrate
+			}
 		});
-		this.quad = new POLY.geometry.Mesh(this.programQuad, null, POLY.gl.TRIANGLE_STRIP);
-		this.quad.addPosition(
-			[
-				10.0, -10.0, 0.0,
-				10.0, 10.0, 0.0,
-				-10.0, -10.0, 0.0,
-				-10.0, 10.0, 0.0
-			]
-		)
+
+		this.quad = new POLY.geometry.Mesh(this.programQuad, state);
+		// this.quad.setScale(.1, 1.2, 1.2)
+		this.quad.addPosition([
+			-1, -1, 0,
+			-1,  1, 0,
+			1,  1, 0,
+			1, -1, 0
+		], 'aPosition');
+		this.quad.addAttribute([
+			1.0, 0.0,
+			1.0, 1.0,
+			0.0, 1.0,
+			0.0, 0.0,
+		], 'aUv', 2);
+        //
 		this.quad.addIndices(
-			[3,2,1,3,1,0]
+			[0,1,2,0,2,3]
 		);
 
-		this.quad.scale.x = 10.;
-		this.quad.scale.y = 10.;
-		this.quad.scale.z = 10.;
+
 
 	    this.texture = new POLY.Texture(window.ASSET_URL + 'image/earth.jpg');
 	    this.textureSpecular = new POLY.Texture(window.ASSET_URL + 'image/earth-specular.gif');
@@ -152,12 +169,8 @@ export default class MainScene
 	        }
 	    }
 
-		let state = new POLY.State(this.gl);
-		state.depthTest = true;
-
 	    this.program = new POLY.Program(vert, frag, uniforms);
-
-    	this.sphere = new POLY.geometry.Sphere(this.program, {}, state);
+    	this.sphere = new POLY.geometry.Cube(this.program, {}, state);
 	}
 
 	render()
@@ -169,28 +182,31 @@ export default class MainScene
 	    // this.program.uniforms.uTexture.bind();
 
 		// set uniforms
-		let c = this.sphere;
-
-		c.rotation.y += .01;
+		this.sphere.rotation.y += .01;
 
 		this.texture.bind(0);
 		this.textureSpecular.bind(1);
 
-		mat4.multiply(this._matrix, this.camera.matrix, c._matrix);
+		mat4.multiply(this._matrix, this.camera.matrix, this.sphere._matrix);
 		mat3.fromMat4(this.normalMatrix, this._matrix);
 		mat3.transpose(this.normalMatrix, this.normalMatrix);
 
+		this.fbo.bind();
+		this.program.bind();
 	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.program.uniforms.viewMatrix = this.camera.matrix;
 		this.program.uniforms.normalMatrix = this.normalMatrix;
+		this.program.uniforms.modelMatrix = this.sphere._matrix;
 
+	   	POLY.GL.draw(this.sphere);        
+		this.fbo.unbind();
 
-		this.program.uniforms.modelMatrix = c._matrix;
-	   	POLY.GL.draw(c);
-
+		this.programQuad.bind();
+		// this.fbo.gltexture.bind(0);
+		this.programQuad.uniforms.uTexture = this.fbo.gltexture;
 		this.programQuad.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.programQuad.uniforms.viewMatrix = this.camera.matrix;
-		// this.programQuad.uniforms.modelMatrix = c._matrix;
+	    this.programQuad.uniforms.modelMatrix = this.quad._matrix;
 		POLY.GL.draw(this.quad);
 	}
 

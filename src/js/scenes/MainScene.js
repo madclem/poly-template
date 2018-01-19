@@ -113,7 +113,7 @@ export default class MainScene
 
 
 
-	    this.texture = new POLY.Texture(window.ASSET_URL + 'image/earth.jpg');
+		this.texture = new POLY.Texture(window.ASSET_URL + 'image/earth.jpg');
 	    this.textureSpecular = new POLY.Texture(window.ASSET_URL + 'image/earth-specular.gif');
 
 	    let uniforms = {
@@ -184,30 +184,38 @@ export default class MainScene
 		// set uniforms
 		this.sphere.rotation.y += .01;
 
-		this.texture.bind(0);
-		this.textureSpecular.bind(1);
 
 		mat4.multiply(this._matrix, this.camera.matrix, this.sphere._matrix);
 		mat3.fromMat4(this.normalMatrix, this._matrix);
 		mat3.transpose(this.normalMatrix, this.normalMatrix);
 
 		this.fbo.bind();
+
 		this.program.bind();
+
+		this.texture.bind(0);
+		this.textureSpecular.bind(1);
 	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.program.uniforms.viewMatrix = this.camera.matrix;
 		this.program.uniforms.normalMatrix = this.normalMatrix;
 		this.program.uniforms.modelMatrix = this.sphere._matrix;
 
-	   	POLY.GL.draw(this.sphere);        
+	   	POLY.GL.draw(this.sphere);
+
 		this.fbo.unbind();
 
+
 		this.programQuad.bind();
-		// this.fbo.gltexture.bind(0);
-		this.programQuad.uniforms.uTexture = this.fbo.gltexture;
+		this.fbo.textures[0].bind();
 		this.programQuad.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.programQuad.uniforms.viewMatrix = this.camera.matrix;
 	    this.programQuad.uniforms.modelMatrix = this.quad._matrix;
 		POLY.GL.draw(this.quad);
+
+
+		// this.fbo.clear();
+
+
 	}
 
 	resize()

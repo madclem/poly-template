@@ -1,5 +1,6 @@
 import * as POLY from 'poly/Poly';
 import MainScene from './scenes/MainScene';
+import ParticlesScene from './scenes/ParticlesScene';
 import { Loader } from 'utils';
 
 const Manifests = require('./manifests/manifest.json');
@@ -25,14 +26,21 @@ export default class App
 
 	_loadComplete()
 	{
-		this.scene = new MainScene();
+		// this.scene = new MainScene();
+		this.scene = new ParticlesScene();
+		this.scene.resize();
 
 	    POLY.utils.loop.add(this._update.bind(this));
 	}
 
 	resize()
 	{
-		POLY.GL.resize(this.gl.canvas.clientWidth, this.gl.canvas.clientHeight)
+		POLY.GL.resize(this.gl.canvas.clientWidth, this.gl.canvas.clientHeight);
+
+		if(this.scene)
+		{
+			this.scene.resize();
+		}
 	}
 
 	_update()

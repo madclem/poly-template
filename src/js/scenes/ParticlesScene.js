@@ -1,9 +1,9 @@
 import * as POLY from 'poly/Poly';
-import frag from '../shaders/basic.frag';
-import vert from '../shaders/basic.vert';
+import frag from '../shaders/particles.frag';
+import vert from '../shaders/particles.vert';
 import {mat3, mat4} from 'gl-matrix';
 
-export default class MainScene
+export default class ParticlesScene
 {
 	constructor()
 	{
@@ -28,7 +28,9 @@ export default class MainScene
 		let state = new POLY.State(this.gl);
 		state.depthTest = true;
 
-		this.fbo = new POLY.FrameBuffer(1024, 1024);
+		let width = 1024;
+		let height = 1024;
+		this.fbo = new POLY.FrameBuffer(width, height);
 
 
 		let vertQuad = `
@@ -111,15 +113,20 @@ export default class MainScene
 		);
 
 
+		let l = width * height;
+		let vertices = new Float32Array(l * 3);
+		for ( var i = 0; i < l; i++ ) 
+		{
+            var i3 = i * 3;
+            vertices[ i3 ] = ( i % width ) / width;
+            vertices[ i3 + 1 ] = ( i / width ) / height;
+        }
 
-		this.texture = new POLY.Texture(window.ASSET_URL + 'image/earth.jpg');
-	    this.textureSpecular = new POLY.Texture(window.ASSET_URL + 'image/earth-specular.gif');
-
-	    let uniforms = {
-	        projectionMatrix: {
-	        	value: this.camera.projectionMatrix,
-	        	type: 'mat4'
-	        },
+        this.program = new POLY.Program(vert, frag, {
+    		projectionMatrix: {
+        		value: this.camera.projectionMatrix,
+        		type: 'mat4'
+        	},
 	        normalMatrix: {
 	        	value: this.normalMatrix,
 	        	type: 'mat3'
@@ -131,45 +138,11 @@ export default class MainScene
 	        viewMatrix: {
 	        	value: this.camera.matrix,
 	        	type: 'mat4'
-	        },
-	        uTexture: {
-	        	value: this.texture,
-	        	type: 'texture',
-				index: 0
-	        },
-	        uTextureSpecular: {
-	        	value: this.textureSpecular,
-	        	type: 'texture',
-				index: 1
-	        },
-	        uAmbientColor: {
-	        	value: [.5, .5, .5],
-	        	type: 'vec3'
-	        },
-	        uPointLightingLocation: {
-	        	value: [-2.0, .0, 0.],
-	        	type: 'vec3'
-	        },
-	        uPointLightingDiffuseColor: {
-	        	value: [1., 0, 0],
-	        	type: 'vec3'
-	        },
-	        uPointLightingSpecularColor: {
-	        	value: [5., 5., 5.],
-	        	type: 'vec3'
-	        },
-	        uMaterialShininess: {
-	        	value: 40.,
-	        	type: 'float'
-	        },
-	        uAlpha: {
-	        	value: 1,
-	        	type: 'float'
 	        }
-	    }
+        });
+        this.particles = new POLY.geometry.Mesh(this.program);
+        this.particles.addPosition(vertices);
 
-	    this.program = new POLY.Program(vert, frag, uniforms);
-    	this.sphere = new POLY.geometry.Cube(this.program, {}, state);
 	}
 
 	render()
@@ -181,31 +154,25 @@ export default class MainScene
 	    // this.program.uniforms.uTexture.bind();
 
 		// set uniforms
-		this.sphere.rotation.y += .01;
+		// this.sphere.rotation.y += .01;
 
 
-		mat4.multiply(this._matrix, this.camera.matrix, this.sphere._matrix);
+		// mat4.multiply(this._matrix, this.camera.matrix, this.sphere._matrix);
 		mat3.fromMat4(this.normalMatrix, this._matrix);
 		mat3.transpose(this.normalMatrix, this.normalMatrix);
 
 		this.fbo.bind();
-
 		this.program.bind();
-
-		this.texture.bind(0);
-		this.textureSpecular.bind(1);
-	    this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
+		this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.program.uniforms.viewMatrix = this.camera.matrix;
-		this.program.uniforms.normalMatrix = this.normalMatrix;
-		this.program.uniforms.modelMatrix = this.sphere._matrix;
-
-	   	POLY.GL.draw(this.sphere);
-
+	    this.program.uniforms.modelMatrix = this.quad._matrix;	
+		POLY.GL.draw(this.particles);
 		this.fbo.unbind();
 
 
 		this.programQuad.bind();
 		this.fbo.textures[0].bind();
+		// this.textureCrate.bind();
 		this.programQuad.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.programQuad.uniforms.viewMatrix = this.camera.matrix;
 	    this.programQuad.uniforms.modelMatrix = this.quad._matrix;

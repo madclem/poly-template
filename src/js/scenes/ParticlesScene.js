@@ -1,6 +1,8 @@
 import * as POLY from 'poly/Poly';
 import frag from '../shaders/particles.frag';
 import vert from '../shaders/particles.vert';
+import simulation_fs from '../shaders/simulation_fs.frag';
+import simulation_vs from '../shaders/simulation_vs.vert';
 import {mat3, mat4} from 'gl-matrix';
 
 export default class ParticlesScene
@@ -39,9 +41,6 @@ export default class ParticlesScene
 			attribute vec3 aPosition;
 			attribute vec3 aNormal;
 			attribute vec2 aUv;
-			uniform mat4 modelMatrix;
-			uniform mat4 viewMatrix;
-			uniform mat4 projectionMatrix;
 
 			varying vec3 vPos;
 			varying vec2 vUv;
@@ -51,7 +50,7 @@ export default class ParticlesScene
 				vPos = aPosition;
 				vec3 n = aNormal;
 				vUv = aUv;
-			    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
+			    gl_Position = vec4(aPosition, 1.0);
 			}
 		`
 
@@ -67,10 +66,7 @@ export default class ParticlesScene
 
 			vec4 textureColor = texture2D(uTexture, vec2(vUv.s, vUv.t));
 			gl_FragColor = textureColor;
-			// gl_FragColor = vec4(1.);
-			// gl_FragColor.rgb *= uAlpha;
 		}
-
 		`
 
 
@@ -142,6 +138,31 @@ export default class ParticlesScene
         });
         this.particles = new POLY.geometry.Mesh(this.program);
         this.particles.addPosition(vertices);
+
+
+        let w = 256;
+        let h = 256;
+        let len = w * h * 3;
+        let data = new Float32Array( len );
+        while( len-- )data[len] = ( Math.random() -.5 ) * 256;
+
+
+        this.simulationProgram = new POLY.Program(simulation_vs, simulation_fs, {
+        	projectionMatrix: {
+        		value: this.camera.projectionMatrix,
+        		type: 'mat4'
+        	},
+	        modelMatrix: {
+	        	value: this.modelMatrix,
+	        	type: 'mat4'
+	        },
+	        viewMatrix: {
+	        	value: this.camera.matrix,
+	        	type: 'mat4'
+	        }
+        });
+
+        this.quadSim = new POLY.geometry.Quad(this.simulationProgram);
 
 	}
 

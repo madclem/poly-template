@@ -3,6 +3,10 @@ import frag from '../shaders/particles.frag';
 import vert from '../shaders/particles.vert';
 import simulation_fs from '../shaders/simulation_fs.frag';
 import simulation_vs from '../shaders/simulation_vs.vert';
+import render_fs from '../shaders/render.frag';
+import render_vs from '../shaders/render.vert';
+import test_fs from '../shaders/test.frag';
+import test_vs from '../shaders/test.vert';
 import {mat3, mat4} from 'gl-matrix';
 
 export default class ParticlesScene
@@ -30,121 +34,18 @@ export default class ParticlesScene
 		let state = new POLY.State(this.gl);
 		state.depthTest = true;
 
-		let width = 1024;
-		let height = 1024;
+		let width = 512;
+		let height = 512;
 		this.fbo = new POLY.FrameBuffer(width, height);
 
+        let w = width;
+        let h = height;
+        let len = w * h * 4;
+        let data = new Uint8Array( len );
 
-		let vertQuad = `
-			precision mediump float;
+        while( len-- )data[len] = ( Math.random() - .5) * 256;
 
-			attribute vec3 aPosition;
-			attribute vec3 aNormal;
-			attribute vec2 aUv;
-
-			varying vec3 vPos;
-			varying vec2 vUv;
-
-
-			void main(void) {
-				vPos = aPosition;
-				vec3 n = aNormal;
-				vUv = aUv;
-			    gl_Position = vec4(aPosition, 1.0);
-			}
-		`
-
-		let fragQuad = `
-		precision mediump float;
-
-		uniform sampler2D uTexture;
-
-		varying vec3 vPos;
-		varying vec2 vUv;
-
-		void main(void) {
-
-			vec4 textureColor = texture2D(uTexture, vec2(vUv.s, vUv.t));
-			gl_FragColor = textureColor;
-		}
-		`
-
-
-		this.textureCrate = new POLY.Texture(window.ASSET_URL + 'image/crate.gif');
-		this.programQuad = new POLY.Program(vertQuad, fragQuad, {
-			projectionMatrix: {
-	        	value: this.camera.projectionMatrix,
-	        	type: 'mat4'
-	        },
-	        modelMatrix: {
-	        	value: this.modelMatrix,
-	        	type: 'mat4'
-	        },
-	        viewMatrix: {
-	        	value: this.camera.matrix,
-	        	type: 'mat4'
-	        },
-			uTexture: {
-				type:'texture',
-				value: this.textureCrate
-			}
-		});
-
-		this.quad = new POLY.geometry.Mesh(this.programQuad, state);
-		this.quad.addPosition([
-			-1, -1, 0,
-			-1,  1, 0,
-			1,  1, 0,
-			1, -1, 0
-		], 'aPosition');
-		this.quad.addAttribute([
-			1.0, 0.0,
-			1.0, 1.0,
-			0.0, 1.0,
-			0.0, 0.0,
-		], 'aUv', 2);
-        //
-		this.quad.addIndices(
-			[0,1,2,0,2,3]
-		);
-
-
-		let l = width * height;
-		let vertices = new Float32Array(l * 3);
-		for ( var i = 0; i < l; i++ ) 
-		{
-            var i3 = i * 3;
-            vertices[ i3 ] = ( i % width ) / width;
-            vertices[ i3 + 1 ] = ( i / width ) / height;
-        }
-
-        this.program = new POLY.Program(vert, frag, {
-    		projectionMatrix: {
-        		value: this.camera.projectionMatrix,
-        		type: 'mat4'
-        	},
-	        normalMatrix: {
-	        	value: this.normalMatrix,
-	        	type: 'mat3'
-	        },
-	        modelMatrix: {
-	        	value: this.modelMatrix,
-	        	type: 'mat4'
-	        },
-	        viewMatrix: {
-	        	value: this.camera.matrix,
-	        	type: 'mat4'
-	        }
-        });
-        this.particles = new POLY.geometry.Mesh(this.program);
-        this.particles.addPosition(vertices);
-
-
-        let w = 256;
-        let h = 256;
-        let len = w * h * 3;
-        let data = new Float32Array( len );
-        while( len-- )data[len] = ( Math.random() -.5 ) * 256;
+        this.dataTexture = new POLY.DataTexture(data, w, h, POLY.gl.RGBA);
 
 
         this.simulationProgram = new POLY.Program(simulation_vs, simulation_fs, {
@@ -161,8 +62,40 @@ export default class ParticlesScene
 	        	type: 'mat4'
 	        }
         });
+        this.geomSim = new POLY.geometry.Quad(this.simulationProgram);
 
-        this.quadSim = new POLY.geometry.Quad(this.simulationProgram);
+        this.renderingProgram = new POLY.Program(render_vs, render_fs, {
+        	projectionMatrix: {
+        		value: this.camera.projectionMatrix,
+        		type: 'mat4'
+        	},
+	        modelMatrix: {
+	        	value: this.modelMatrix,
+	        	type: 'mat4'
+	        },
+	        viewMatrix: {
+	        	value: this.camera.matrix,
+	        	type: 'mat4'
+	        },
+	        pointSize: {
+	        	value: 1,
+	        	type: 'float'
+	        }
+        });
+
+ 
+        let l = width * height;
+		let vertices = new Float32Array(l * 3);
+		for ( var i = 0; i < l; i++ ) 
+		{
+            var i3 = i * 3;
+            vertices[ i3 ] = ( i % width ) / width;
+            vertices[ i3 + 1 ] = ( i / width ) / height;
+        }
+
+        let stateRendering = new POLY.State(this.gl);
+        this.geomRendering = new POLY.geometry.Mesh(this.renderingProgram, stateRendering, POLY.gl.POINTS);
+        this.geomRendering.addPosition(vertices);
 
 	}
 
@@ -172,37 +105,26 @@ export default class ParticlesScene
 
 		this.orbitalControl.update();
 		this.camera.position[2] += .01;
-	    // this.program.uniforms.uTexture.bind();
-
-		// set uniforms
-		// this.sphere.rotation.y += .01;
-
-
-		// mat4.multiply(this._matrix, this.camera.matrix, this.sphere._matrix);
-		mat3.fromMat4(this.normalMatrix, this._matrix);
+	  	mat3.fromMat4(this.normalMatrix, this._matrix);
 		mat3.transpose(this.normalMatrix, this.normalMatrix);
 
 		this.fbo.bind();
-		this.program.bind();
-		this.program.uniforms.projectionMatrix = this.camera.projectionMatrix;
-	    this.program.uniforms.viewMatrix = this.camera.matrix;
-	    this.program.uniforms.modelMatrix = this.quad._matrix;	
-		POLY.GL.draw(this.particles);
-		this.fbo.unbind();
+		this.simulationProgram.bind();
+		this.dataTexture.bind(0);
+		this.simulationProgram.uniforms.projectionMatrix = this.camera.projectionMatrix;
+	    this.simulationProgram.uniforms.viewMatrix = this.camera.matrix;
+	   	POLY.GL.draw(this.geomSim);
+		this.fbo.unbind()
 
-
-		this.programQuad.bind();
-		this.fbo.textures[0].bind();
-		// this.textureCrate.bind();
-		this.programQuad.uniforms.projectionMatrix = this.camera.projectionMatrix;
-	    this.programQuad.uniforms.viewMatrix = this.camera.matrix;
-	    this.programQuad.uniforms.modelMatrix = this.quad._matrix;
-		POLY.GL.draw(this.quad);
+		this.renderingProgram.bind();
+		this.fbo.textures[0].bind(0);
+		this.renderingProgram.uniforms.projectionMatrix = this.camera.projectionMatrix;
+	    this.renderingProgram.uniforms.viewMatrix = this.camera.matrix;
+	    POLY.GL.draw(this.geomRendering);
 	}
 
 	resize()
 	{
 		this.camera.setAspectRatio(POLY.GL.aspectRatio);
-		this.quad.scale.set(2 * POLY.GL.aspectRatio, 2, 0);
 	}
 }

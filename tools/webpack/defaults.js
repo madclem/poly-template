@@ -1,7 +1,7 @@
 /* Function that returns all default values */
 const path = require('path');
 const srcPath = path.join(__dirname, '/../../src');
-const dfltPort = 8000 + Math.floor(Math.random() * 999);
+const dfltPort = 8080;
 
 
 /**

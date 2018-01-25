@@ -15,17 +15,16 @@ export default class App
 
     	POLY.init(canvas);
 	    this.gl = POLY.gl;
-
 	    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
-
 	    this.loader = new Loader();
 	    this.loader.addManifest(Manifests.default, window.ASSET_URL);
 	    this.loader.onComplete.add(this._loadComplete, this);
 	    this.loader.load();
 	}
 
-	_loadComplete()
+	_loadComplete(resources)
 	{
+		POLY.loadedResources = resources;
 		// this.scene = new MainScene();
 		this.scene = new ParticlesScene();
 		this.scene.resize();
@@ -45,7 +44,7 @@ export default class App
 
 	_update()
 	{
-		this.gl.clearColor(0,0,0,0);
+		this.gl.clearColor(0,0,0,1);
 	    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
 		this.scene.render();

@@ -44,13 +44,13 @@ class Loader {
       this.onProgress = new Signal();
     }
 
-    addFonts(fonts) 
+    addFonts(fonts)
     {
         this.fontsToLoad = this.fontsToLoad.concat(fonts);
         return this;
     }
 
-    addJson(url, id) 
+    addJson(url, id)
     {
         var id = id || path.basename(url, path.extname(url));
 
@@ -66,7 +66,7 @@ class Loader {
         return this;
     }
 
-    addCSS(url) 
+    addCSS(url)
     {
       var link = document.createElement("link");
       link.type = "text/css";
@@ -77,17 +77,17 @@ class Loader {
       return this;
     }
 
-    load() 
+    load()
     {
       this._loadFonts();
 
     }
 
-    _loadFiles() 
+    _loadFiles()
     {
       this.fileCount = 0;
 
-      if(this.filesToLoad.length) 
+      if(this.filesToLoad.length)
       {
           this._loadNextFile();
       }
@@ -96,7 +96,7 @@ class Loader {
       }
     }
 
-    _loadNextFile() 
+    _loadNextFile()
     {
       var fileData = this.filesToLoad[this.fileCount];
 
@@ -112,7 +112,7 @@ class Loader {
       }
     }
 
-    _onFileLoaded() 
+    _onFileLoaded()
     {
         var fileData = this.filesToLoad[this.fileCount];
 
@@ -151,7 +151,7 @@ class Loader {
         this.fileCount++;
         this._onProgress();
 
-        if(this.fileCount === this.filesToLoad.length) 
+        if(this.fileCount === this.filesToLoad.length)
         {
             // complete!
             this._loadAssets();
@@ -162,10 +162,10 @@ class Loader {
         }
     }
 
-    _getFonts(fonts) 
+    _getFonts(fonts)
     {
       var a = [];
-      for (var i = 0; i < fonts.length; i++) 
+      for (var i = 0; i < fonts.length; i++)
       {
         a.push(fonts[i].load());
       }
@@ -173,16 +173,16 @@ class Loader {
       return a;
     }
 
-    _loadFonts() 
+    _loadFonts()
     {
-        if(this.fontsToLoad.length === 0) 
+        if(this.fontsToLoad.length === 0)
         {
           this._loadFiles();
           return;
         }
 
         var fonts = [];
-        for (var i = 0; i < this.fontsToLoad.length; i++) 
+        for (var i = 0; i < this.fontsToLoad.length; i++)
         {
           var f = new FontFaceObserver(this.fontsToLoad[i])
           fonts.push(f);
@@ -215,7 +215,7 @@ class Loader {
             this._onComplete();
             return;
         }
-      
+
         this.assetLoader = new ResourceLoader();
         this.assetLoader.add(this.assetsToLoad);
         this.assetLoader.on('progress', this._onProgress, this)
@@ -223,18 +223,17 @@ class Loader {
         this.assetLoader.load( this._onComplete.bind(this) );
     }
 
-    _onComplete(l, r) 
+    _onComplete(l, r)
     {
-        POLY.loadedResources = r;
         this.onProgress.dispatch(1);
-        this.onComplete.dispatch();
+        this.onComplete.dispatch(r);
     }
 
-    _onProgress() 
+    _onProgress()
     {
         var total =  this.filesToLoad.length + this.assetsToLoad.length;
         var loaded = this.fileCount;
-       
+
         if(this.assetLoader)
         {
             loaded = this.assetLoader.progress;

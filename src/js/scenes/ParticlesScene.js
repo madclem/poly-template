@@ -26,77 +26,80 @@ export default class ParticlesScene
 		this.camera.perspective(45, POLY.GL.aspectRatio, 0.1, 100.0)
 		this.orbitalControl = new POLY.control.OrbitalControl(this.camera.matrix);
 
-		this._matrix = mat4.create();
-		this.normalMatrix = mat3.create();
+		POLY.GL.setCamera(this.camera); // set camera to automatically update shader matrices
 
 	    this.gl = POLY.gl;
 
 		let stateRendering = new POLY.State(this.gl);
         stateRendering.depthTest = true;
+        stateRendering.blend = true;
+        stateRendering.blendMode = true;
 
-		let width = 1024;
-		let height = 1024;
+		let width = 256;
+		let height = 256;
 		this.fbo = new POLY.FrameBuffer(width, height);
+		let data = this.getImage(POLY.loadedResources[window.ASSET_URL + 'image/noise.jpg'].data, width, height, 100);
+        this.dataTexture = new POLY.DataTexture(data, width, height, this.gl.RGB);
 
-        let w = width;
-        let h = height;
-        let len = w * h * 4;
-        let data = new Float32Array( len );
-
-        while( len-- )data[len] = ( Math.random() );
-
-        this.dataTexture = new POLY.DataTexture(data, w, h);
-
-
-        this.simulationProgram = new POLY.Program(simulation_vs, simulation_fs, {
-        	projectionMatrix: {
-        		value: this.camera.projectionMatrix,
-        		type: 'mat4'
-        	},
-	        modelMatrix: {
-	        	value: this.modelMatrix,
-	        	type: 'mat4'
-	        },
-	        viewMatrix: {
-	        	value: this.camera.matrix,
-	        	type: 'mat4'
-	        }
-        });
+        this.simulationProgram = new POLY.Program(simulation_vs, simulation_fs);
         this.geomSim = new POLY.geometry.Quad(this.simulationProgram, null, stateRendering);
 
         this.renderingProgram = new POLY.Program(render_vs, render_fs, {
-        	projectionMatrix: {
-        		value: this.camera.projectionMatrix,
-        		type: 'mat4'
-        	},
-	        modelMatrix: {
-	        	value: this.modelMatrix,
-	        	type: 'mat4'
-	        },
-	        viewMatrix: {
-	        	value: this.camera.matrix,
-	        	type: 'mat4'
-	        },
-	        pointSize: {
+	        pointSize:
+			{
 	        	value: 1,
 	        	type: 'float'
 	        }
         });
 
- 
-        let l = width * height;
+
+        let l = (width) * (height);
 		let vertices = new Float32Array(l * 3);
-		for ( var i = 0; i < l; i++ ) 
+		for ( var i = 0; i < l; i++ )
 		{
             var i3 = i * 3;
             vertices[ i3 ] = ( i % width ) / width;
             vertices[ i3 + 1 ] = ( i / width ) / height;
         }
 
-        
+
         this.geomRendering = new POLY.geometry.Mesh(this.renderingProgram, stateRendering, POLY.gl.POINTS);
         this.geomRendering.addPosition(vertices);
 
+		this.planes = new POLY.helpers.BatchPlanes();
+
+	}
+
+	getImage( img, width, height, elevation )
+	{
+
+
+    	var canvas = document.createElement( "canvas");
+      	canvas.width = width;
+      	canvas.height = height;
+
+		var ctx = canvas.getContext("2d");
+		ctx.drawImage(img, 0, 0);
+
+
+		var imgData = ctx.getImageData(0,0,width,height);
+		var iData = imgData.data;
+
+		var l = (width * height );
+		var data = new Float32Array( l * 3 );
+		for ( var i = 0; i < l; i++ ) {
+
+		    var i3 = i * 3;
+		    var i4 = i * 4;
+		    data[ i3 ]      = ( ( i % width ) / width  -.5 ) * width;
+		    data[ i3 ]      /= 100;
+		    data[ i3 + 1 ]  = ( iData[i4] / 0xFF * 0.299 +iData[i4+1]/0xFF * 0.587 + iData[i4+2] / 0xFF * 0.114 ) * elevation;
+		    data[ i3 + 1 ]  /= 100;
+		    data[ i3 + 2 ]  = ( ( i / width ) / height -.5 ) * height;
+		    data[ i3 + 2 ]  /= 100;
+		}
+
+		return data;
 	}
 
 	render()
@@ -104,26 +107,27 @@ export default class ParticlesScene
 		this.tick++;
 
 		this.orbitalControl.update();
-		this.camera.position[2] += .01;
-	  	mat3.fromMat4(this.normalMatrix, this._matrix);
-		mat3.transpose(this.normalMatrix, this.normalMatrix);
-		
 
-	    
-		this.fbo.bind();
-		this.simulationProgram.bind();
-		this.dataTexture.bind(0);
-		this.simulationProgram.uniforms.projectionMatrix = this.camera.projectionMatrix;
-	    this.simulationProgram.uniforms.viewMatrix = this.camera.matrix;
-	   	POLY.GL.draw(this.geomSim);
-		this.fbo.unbind();
+		// this.fbo.bind();
+		// this.simulationProgram.bind();
+		// this.dataTexture.bind(0);
+		// this.simulationProgram.uniforms.projectionMatrix = this.camera.projectionMatrix;
+	    // this.simulationProgram.uniforms.viewMatrix = this.camera.matrix;
+	   	// POLY.GL.draw(this.geomSim);
+		// this.fbo.unbind();
 
+		// POLY.gl.enable(POLY.gl.DEPTH_TEST);
+		// POLY.gl.depthFunc(POLY.gl.LEQUAL);
+		// POLY.gl.enable(POLY.gl.BLEND);
+		// POLY.gl.blendEquation(POLY.gl.FUNC_ADD);
+		// POLY.gl.blendFunc(POLY.gl.SRC_ALPHA, POLY.gl.ONE);
+		this.planes.draw();
 
 		this.renderingProgram.bind();
-		this.fbo.textures[0].bind(0);
-		this.renderingProgram.uniforms.projectionMatrix = this.camera.projectionMatrix;
-	    this.renderingProgram.uniforms.viewMatrix = this.camera.matrix;
+		// this.fbo.textures[0].bind(0);
+		this.dataTexture.bind(0);
 	    POLY.GL.draw(this.geomRendering);
+
 
 	    this.fbo.clear();
 	}

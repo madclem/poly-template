@@ -31,21 +31,21 @@ export default class ParticlesScene
 
 	    this.gl = POLY.gl;
 
-		let state = new POLY.State(this.gl);
-		state.depthTest = true;
+		let stateRendering = new POLY.State(this.gl);
+        stateRendering.depthTest = true;
 
-		let width = 512;
-		let height = 512;
+		let width = 1024;
+		let height = 1024;
 		this.fbo = new POLY.FrameBuffer(width, height);
 
         let w = width;
         let h = height;
         let len = w * h * 4;
-        let data = new Uint8Array( len );
+        let data = new Float32Array( len );
 
-        while( len-- )data[len] = ( Math.random() - .5) * 256;
+        while( len-- )data[len] = ( Math.random() );
 
-        this.dataTexture = new POLY.DataTexture(data, w, h, POLY.gl.RGBA);
+        this.dataTexture = new POLY.DataTexture(data, w, h);
 
 
         this.simulationProgram = new POLY.Program(simulation_vs, simulation_fs, {
@@ -62,7 +62,7 @@ export default class ParticlesScene
 	        	type: 'mat4'
 	        }
         });
-        this.geomSim = new POLY.geometry.Quad(this.simulationProgram);
+        this.geomSim = new POLY.geometry.Quad(this.simulationProgram, null, stateRendering);
 
         this.renderingProgram = new POLY.Program(render_vs, render_fs, {
         	projectionMatrix: {
@@ -93,7 +93,7 @@ export default class ParticlesScene
             vertices[ i3 + 1 ] = ( i / width ) / height;
         }
 
-        let stateRendering = new POLY.State(this.gl);
+        
         this.geomRendering = new POLY.geometry.Mesh(this.renderingProgram, stateRendering, POLY.gl.POINTS);
         this.geomRendering.addPosition(vertices);
 
@@ -107,20 +107,25 @@ export default class ParticlesScene
 		this.camera.position[2] += .01;
 	  	mat3.fromMat4(this.normalMatrix, this._matrix);
 		mat3.transpose(this.normalMatrix, this.normalMatrix);
+		
 
+	    
 		this.fbo.bind();
 		this.simulationProgram.bind();
 		this.dataTexture.bind(0);
 		this.simulationProgram.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.simulationProgram.uniforms.viewMatrix = this.camera.matrix;
 	   	POLY.GL.draw(this.geomSim);
-		this.fbo.unbind()
+		this.fbo.unbind();
+
 
 		this.renderingProgram.bind();
 		this.fbo.textures[0].bind(0);
 		this.renderingProgram.uniforms.projectionMatrix = this.camera.projectionMatrix;
 	    this.renderingProgram.uniforms.viewMatrix = this.camera.matrix;
 	    POLY.GL.draw(this.geomRendering);
+
+	    this.fbo.clear();
 	}
 
 	resize()

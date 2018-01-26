@@ -25,8 +25,8 @@ export default class App
 	_loadComplete(resources)
 	{
 		POLY.loadedResources = resources;
-		// this.scene = new MainScene();
-		this.scene = new ParticlesScene();
+		this.scene = new MainScene();
+		// this.scene = new ParticlesScene();
 		this.scene.resize();
 
 	    POLY.utils.loop.add(this._update.bind(this));

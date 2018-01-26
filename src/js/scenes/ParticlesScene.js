@@ -15,56 +15,57 @@ export default class ParticlesScene
 	{
 		this.gl = null;
 		this.program = null;
-		this.sphere = null;
-		this.rot = null;
-		this.tick = 0;
-		this.angle = null;
+		// this.sphere = null;
+		// this.rot = null;
+		// this.tick = 0;
+		// this.angle = null;
 
-		this.modelMatrix = mat4.create();
+		// this.modelMatrix = mat4.create();
 
 		this.camera = new POLY.cameras.PerspectiveCamera();
 		this.camera.perspective(45, POLY.GL.aspectRatio, 0.1, 100.0)
-		this.orbitalControl = new POLY.control.OrbitalControl(this.camera.matrix);
 
 		POLY.GL.setCamera(this.camera); // set camera to automatically update shader matrices
 
+		this.orbitalControl = new POLY.control.OrbitalControl(this.camera.matrix);
+
 	    this.gl = POLY.gl;
 
-		let stateRendering = new POLY.State(this.gl);
-        stateRendering.depthTest = true;
-        stateRendering.blend = true;
-        stateRendering.blendMode = true;
-
-		let width = 256;
-		let height = 256;
-		this.fbo = new POLY.FrameBuffer(width, height);
-		let data = this.getImage(POLY.loadedResources[window.ASSET_URL + 'image/noise.jpg'].data, width, height, 100);
-        this.dataTexture = new POLY.DataTexture(data, width, height, this.gl.RGB);
-
-        this.simulationProgram = new POLY.Program(simulation_vs, simulation_fs);
-        this.geomSim = new POLY.geometry.Quad(this.simulationProgram, null, stateRendering);
-
-        this.renderingProgram = new POLY.Program(render_vs, render_fs, {
-	        pointSize:
-			{
-	        	value: 1,
-	        	type: 'float'
-	        }
-        });
-
-
-        let l = (width) * (height);
-		let vertices = new Float32Array(l * 3);
-		for ( var i = 0; i < l; i++ )
-		{
-            var i3 = i * 3;
-            vertices[ i3 ] = ( i % width ) / width;
-            vertices[ i3 + 1 ] = ( i / width ) / height;
-        }
-
-
-        this.geomRendering = new POLY.geometry.Mesh(this.renderingProgram, stateRendering, POLY.gl.POINTS);
-        this.geomRendering.addPosition(vertices);
+		// let stateRendering = new POLY.State(this.gl);
+        // stateRendering.depthTest = true;
+        // stateRendering.blend = true;
+        // stateRendering.blendMode = true;
+        //
+		// let width = 256;
+		// let height = 256;
+		// this.fbo = new POLY.FrameBuffer(width, height);
+		// let data = this.getImage(POLY.loadedResources[window.ASSET_URL + 'image/noise.jpg'].data, width, height, 100);
+        // this.dataTexture = new POLY.DataTexture(data, width, height, this.gl.RGB);
+        //
+        // this.simulationProgram = new POLY.Program(simulation_vs, simulation_fs);
+        // this.geomSim = new POLY.geometry.Quad(this.simulationProgram, null, stateRendering);
+        //
+        // this.renderingProgram = new POLY.Program(render_vs, render_fs, {
+	    //     pointSize:
+		// 	{
+	    //     	value: 1,
+	    //     	type: 'float'
+	    //     }
+        // });
+        //
+        //
+        // let l = (width) * (height);
+		// let vertices = new Float32Array(l * 3);
+		// for ( var i = 0; i < l; i++ )
+		// {
+        //     var i3 = i * 3;
+        //     vertices[ i3 ] = ( i % width ) / width;
+        //     vertices[ i3 + 1 ] = ( i / width ) / height;
+        // }
+        //
+        //
+        // this.geomRendering = new POLY.geometry.Mesh(this.renderingProgram, stateRendering, POLY.gl.POINTS);
+        // this.geomRendering.addPosition(vertices);
 
 		this.planes = new POLY.helpers.BatchPlanes();
 
@@ -104,8 +105,8 @@ export default class ParticlesScene
 
 	render()
 	{
-		this.tick++;
-
+		// this.tick++;
+		// console.log(this.orbitalControl);
 		this.orbitalControl.update();
 
 		// this.fbo.bind();
@@ -123,13 +124,13 @@ export default class ParticlesScene
 		// POLY.gl.blendFunc(POLY.gl.SRC_ALPHA, POLY.gl.ONE);
 		this.planes.draw();
 
-		this.renderingProgram.bind();
-		// this.fbo.textures[0].bind(0);
-		this.dataTexture.bind(0);
-	    POLY.GL.draw(this.geomRendering);
+		// this.renderingProgram.bind();
+		// // this.fbo.textures[0].bind(0);
+		// this.dataTexture.bind(0);
+	    // POLY.GL.draw(this.geomRendering);
 
 
-	    this.fbo.clear();
+	    // this.fbo.clear();
 	}
 
 	resize()

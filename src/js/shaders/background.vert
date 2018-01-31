@@ -13,10 +13,6 @@ varying vec2 vUv;
 
 void main(void) {
 	vPos = aPosition;
-	// vUv = aPosition.xy;
 	vUv = aUv;
-
-	vec4 position = projectionMatrix * viewMatrix * modelMatrix * vec4(aPosition, 1.0);
-
-    gl_Position =  position;
+    gl_Position =  vec4(aPosition, 1.0);
 }

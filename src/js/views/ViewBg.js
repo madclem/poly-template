@@ -8,8 +8,8 @@ export default class ViewBg
     {
         this.program = new POLY.Program(vert, frag);
 
-        let state = new POLY.State(this.program);
-        state.depthTest = false;  
+        let state = new POLY.State(this.program.gl);
+        state.depthTest = false;
         this.geom = new POLY.geometry.Quad(this.program, null, state);
 
         this.texture = new POLY.Texture(texture);

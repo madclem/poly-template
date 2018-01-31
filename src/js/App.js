@@ -1,6 +1,5 @@
 import * as POLY from 'poly/Poly';
 import MainScene from './scenes/MainScene';
-import ParticlesScene from './scenes/ParticlesScene';
 import { Loader } from 'utils';
 
 const Manifests = require('./manifests/manifest.json');
@@ -25,8 +24,7 @@ export default class App
 	_loadComplete(resources)
 	{
 		POLY.loadedResources = resources;
-		this.scene = new MainScene();
-		// this.scene = new ParticlesScene();
+		this.scene = new MainScene();	
 		this.scene.resize();
 
 	    POLY.utils.loop.add(this._update.bind(this));

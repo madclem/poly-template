@@ -1,6 +1,7 @@
 import * as POLY from 'poly/Poly';
 import MainScene from './scenes/MainScene';
 import { Loader } from 'utils';
+import dat from 'dat-gui';
 
 const Manifests = require('./manifests/manifest.json');
 
@@ -19,12 +20,14 @@ export default class App
 	    this.loader.addManifest(Manifests.default, window.ASSET_URL);
 	    this.loader.onComplete.add(this._loadComplete, this);
 	    this.loader.load();
+
+		window.gui = new dat.GUI({ width:300 });
 	}
 
 	_loadComplete(resources)
 	{
 		POLY.loadedResources = resources;
-		this.scene = new MainScene();	
+		this.scene = new MainScene();
 		this.scene.resize();
 
 	    POLY.utils.loop.add(this._update.bind(this));
